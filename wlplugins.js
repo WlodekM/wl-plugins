@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WL plugins for meo
-// @version      1.0a
+// @version      1.0b
 // @description  Plugins but cool and custom
 // @author       WlodekM
 // @match        https://eris.pages.dev/meo/
@@ -189,14 +189,40 @@ wl.events.addEventListener("ready", function () {
     let realLoadstgs = loadstgs;
     loadstgs = function () {
         realLoadstgs()
+        wl.events.fire("pageChange")
+        wl.events.fire("page-"+page)
         navc = document.querySelector(".nav-top");
         for (pageid in settingsPages) {
             const pageData = settingsPages[pageid];
             navc.innerHTML += `
         <input type='button' class='settings-button button' id='submit' value='${pageData.displayName.replaceAll("'", "&apos;")}' onclick='window.settingsPages.${pageid}.func()' aria-label="${pageid}">`
         }
-    }
+    };
     logCategory("API", "#9400D3", "Mixin for settings applied successfully")
+    logCategory("API", "#9400D3", "Doing mixin for page change events");
+    (["loadstart", "loadchat", "launchscreen", "loadexplore", "blockUser"]).forEach(funcName => {
+        eval(`${funcName} = wl.util.mixin(${funcName}, function (o, ...args) {
+    o.call(this, ...args)
+    wl.events.fire("pageChange")
+    wl.events.fire("page-"+page)
+})`)
+    });
+    logCategory("API", "#9400D3", "Mixin for page change events applied successfully")
+    wl.events.addEventListener("page-start", ()=>{
+        logCategory("misc", "gray", "Adding WL buttons")
+        let wlButtonSection = document.createElement("div")
+        wlButtonSection.classList.add("settings-section-outer")
+        wlButtonSection.style.marginTop = "var(--button-margin)"
+        let discordButton = document.createElement("button")
+        discordButton.classList.add("button")
+        discordButton.classList.add("stg-section")
+        discordButton.innerText = "Join the WL plugins discord!";
+        discordButton.addEventListener("click", ()=>window.open("https://discord.gg/vjD9sQ7uDG", '_blank').focus())
+        wlButtonSection.appendChild(discordButton)
+        document.querySelector('.explore').appendChild(wlButtonSection)
+    })
+    wl.events.fire("pageChange")
+    wl.events.fire("page-"+page)
 })
 // make it so that meo doesn't load (hopefully)
 document.addEventListener("DOMContentLoaded", ()=>{
