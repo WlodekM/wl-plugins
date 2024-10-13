@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WL plugins for meo
-// @version      1.1a
+// @version      1.1b
 // @description  Plugins but cool and custom
 // @author       WlodekM
 // @match        https://eris.pages.dev/meo/
@@ -81,7 +81,7 @@ async function loadPlugins() {
 
     wl.util.updateStatus("Fetching plugin list...")
     logCategory("plugins", "blue", "Loading plugin list")
-    let presp = await fetch("https://wlodekm.github.io/wl-plugins/plugins.json", {cache: "no-store"})
+    let presp = await fetch("http://wlodekm.github.io/wl-plugins/plugins.json", {cache: "no-store"})
     let plist = await presp.json()
     logCategory("plugins", "blue", "Pluginst list fetched", plist)
     let wlPluginsEnabled = JSON.parse(localStorage.getItem("wl") ?? "false") || Object.fromEntries(Object.keys(plist).map(n => [n, false]))
@@ -233,6 +233,7 @@ wl.events.addEventListener("ready", function () {
         })
     }
     logCategory("API", "#9400D3", "Plugin css added!")
+    wl.events.fire("post-ready")
 })
 // make it so that meo doesn't load (hopefully)
 document.addEventListener("DOMContentLoaded", ()=>{
