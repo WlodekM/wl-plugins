@@ -1,0 +1,1 @@
+log("test plugin loaded")

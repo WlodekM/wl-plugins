@@ -1,0 +1,27 @@
+{
+    "default": {
+        "script": "https://wlodekm.nekoweb.org/assets/misc/wlplugins/default.js",
+        "alwayson": true,
+        "author": "WlodekM",
+        "name": "Default",
+        "description": "Default plugin, adds settings page and other stuffs"
+    },
+    "signature": {
+        "script": "https://wlodekm.nekoweb.org/assets/misc/wlplugins/signatures.js",
+        "author": "WlodekM",
+        "name": "Signatures",
+        "description": "Add custom signatures to your messages"
+    },
+    "test": {
+        "script": "https://wlodekm.nekoweb.org/assets/misc/wlplugins/test.js",
+        "author": "WlodekM",
+        "name": "Test plugin",
+        "description": "Test plugin"
+    },
+    "nocllogs": {
+        "script": "https://wlodekm.nekoweb.org/assets/misc/wlplugins/nocllogs.js",
+        "author": "WlodekM",
+        "name": "No CL logs",
+        "description": "Disables CloudLink logs in console, now you can send screenshots of the console safely without accisentally sending your token"
+    }
+}
