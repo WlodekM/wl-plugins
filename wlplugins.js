@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WL plugins for meo
-// @version      1.0b
+// @version      1.0c
 // @description  Plugins but cool and custom
 // @author       WlodekM
 // @match        https://eris.pages.dev/meo/
@@ -29,7 +29,7 @@ function logCategoryStyled(category, color, style, ...stuff) {
 const realWebsockets = WebSocket
 WebSocket = null
 
-const version = String(GM.info.scriptMetaStr.split("\n").find(l=>l.startsWith("// @version"))).replace(/^\/\/ @version *(.*)$/g,"$1")
+const version = GM_info.script.version || (String(GM.info.scriptMetaStr.split("\n").find(l=>l.startsWith("// @version"))).replace(/^\/\/ @version *(.*)$/g,"$1"))
 
 logCategoryStyled("main", "DarkGoldenRod", "font-size: 1.5em",
 `WL-plugins for meo version ${version}`)
@@ -85,6 +85,7 @@ async function loadPlugins() {
     let plist = await presp.json()
     logCategory("plugins", "blue", "Pluginst list fetched", plist)
     let wlPluginsEnabled = JSON.parse(localStorage.getItem("wl") ?? "false") || Object.fromEntries(Object.keys(plist).map(n => [n, false]))
+    wlPluginsEnabled.default = true
 
     function updatePluginsEnabled() {
         localStorage.setItem('wl', JSON.stringify(wlPluginsEnabled))
@@ -112,9 +113,13 @@ async function loadPlugins() {
         async load(name) {
             const logFunction = `function log(...stuff) {
                 console.info(\`%cwl%c %cplugins%c %c${name}%c %s\`, "border-radius:5em;background:black;color:white;padding-inline:0.5em", "", "border-radius:5em;background:blue;color:white;padding-inline:0.5em", "", "border-radius:5em;background:orange;color:black;padding-inline:0.5em", "", ...stuff)
-            }`
+            };const WL_plugin_info = ${JSON.stringify(plist[name])};WL_plugin_info.id=\`${name.replaceAll("`", "\\`")}\`\n`+(function css(css) {
+                wl.events.addEventListener("register-css", function () {
+                    wl.util.registerCss(WL_plugin_info.id, css)
+                })
+            });
             let plugin = logFunction+";\n"+(await (await fetch(plist[name].script, {cache: "no-store"})).text());
-            eval(plugin)
+            await eval(plugin)
         }
     }
 
@@ -149,33 +154,7 @@ wl.events.addEventListener("ready", function () {
         logCategory("util", "DarkTurquoise", "ok should be disabled now :+1:")
     }
 
-    const settingsPages = {
-        'wlodeksShenanigans': {
-            displayName: "WL plugins",
-            func: function load() {
-                setTop();
-                let pageContainer = document.querySelector(".settings");
-                pageContainer.innerHTML = `
-                    <h1>WL plugins (aka wlod's shit plugins)</h1>
-                    <div class="settings-section-outer">
-                        ${Object.entries(wl.plugins.list).map(([p, d]) => `<div class="stg-section${wl.plugins.enabled_array().includes(p) ? " checked" : ""}" id="${"wl-plugin-"+p}" onclick='this.classList.toggle("checked");wl.plugins.toggle(${JSON.stringify(p)});modalPluginup()'>
-                            <label class="general-label">
-                                <div class="general-desc">
-                                    ${d.name ?? `plugin.${p}.name`}
-                                    <p class="subsubheader">${d.description ?? `plugin.${p}.description`}</p>
-                                </div>
-                                <div class="settingstoggle">
-                                    <svg viewBox="0 0 24 24" height="20" width="20" aria-hidden="true" focusable="false" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="check">
-                                        <path d="m10 15.586-3.293-3.293-1.414 1.414L10 18.414l9.707-9.707-1.414-1.414z"></path>
-                                    </svg>
-                                </div>
-                            </label>
-                        </div>`).join("\n")}
-                    </div>
-                `;
-            }
-        }
-    }
+    const settingsPages = {}
     
     wl.util.addSettingsPage = function(name, page) {
         settingsPages[name] = page
@@ -208,21 +187,26 @@ wl.events.addEventListener("ready", function () {
 })`)
     });
     logCategory("API", "#9400D3", "Mixin for page change events applied successfully")
-    wl.events.addEventListener("page-start", ()=>{
-        logCategory("misc", "gray", "Adding WL buttons")
-        let wlButtonSection = document.createElement("div")
-        wlButtonSection.classList.add("settings-section-outer")
-        wlButtonSection.style.marginTop = "var(--button-margin)"
-        let discordButton = document.createElement("button")
-        discordButton.classList.add("button")
-        discordButton.classList.add("stg-section")
-        discordButton.innerText = "Join the WL plugins discord!";
-        discordButton.addEventListener("click", ()=>window.open("https://discord.gg/vjD9sQ7uDG", '_blank').focus())
-        wlButtonSection.appendChild(discordButton)
-        document.querySelector('.explore').appendChild(wlButtonSection)
-    })
     wl.events.fire("pageChange")
     wl.events.fire("page-"+page)
+
+    logCategory("API", "#9400D3", "Adding plugin css...")
+    let pluginCss = {}
+    wl.util.registerCss = function registerCss(plugin, css) {
+        if(!pluginCss[plugin]) pluginCss[plugin] = [];
+        pluginCss[plugin].push(css)
+    }
+    wl.events.fire("register-css");
+    for (const ns in pluginCss) {
+        logCategory("API", "#9400D3", "Adding css for " + ns)
+        pluginCss[ns].forEach(css => {
+            if (typeof GM_addStyle != "undefined") return GM_addStyle(css);
+            let cssElem = document.createElement("style");
+            cssElem.innerHTML = css;
+            document.head.append(cssElem)
+        })
+    }
+    logCategory("API", "#9400D3", "Plugin css added!")
 })
 // make it so that meo doesn't load (hopefully)
 document.addEventListener("DOMContentLoaded", ()=>{
