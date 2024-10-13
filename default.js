@@ -22,7 +22,37 @@ wl.events.addEventListener("addSettingsPages", function () {
                         </label>
                     </div>`).join("\n")}
                 </div>
+                <h2>Custom pluginse</h2>
+                <div class="settings-section-outer">
+                    ${wl.plugins.custom.map(p => `<div class="stg-section" onclick="if(confirm('really delete plugin?')) {wl.plugins.custom.splice(0, 1);localStorage.setItem('wlc', JSON.stringify(wl.plugins.custom));modalPluginup()}">
+                        <div class="general-desc">
+                            ${p.name ?? `plugin.name`}
+                            <p class="subsubheader">${p.description ?? `plugin.description`}</p>
+                        </div>
+                    </div>`)}
+                </div>
+                <h3>Add custom plugin</h3>
+                <br>
+                <input type='file' accept='application/javascript' id='pluginInput'><br>
             `;
+            document.getElementById("pluginInput").addEventListener('change', (event)=>{
+                var input = event.target;
+
+                var reader = new FileReader();
+                reader.onload = function() {
+                    var text = reader.result;
+                    let name = prompt("Plugin name")
+                    let description = prompt("Plugin description")
+                    wl.plugins.custom.push({
+                        name,
+                        description,
+                        script: text
+                    });
+                    localStorage.setItem('wlc', JSON.stringify(wl.plugins.custom));
+                    modalPluginup();
+                };
+                reader.readAsText(input.files[0]);
+            })
         }
     })
 })
