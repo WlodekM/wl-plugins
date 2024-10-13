@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WL plugins for meo
-// @version      1.0c
+// @version      1.1a
 // @description  Plugins but cool and custom
 // @author       WlodekM
 // @match        https://eris.pages.dev/meo/
@@ -81,11 +81,12 @@ async function loadPlugins() {
 
     wl.util.updateStatus("Fetching plugin list...")
     logCategory("plugins", "blue", "Loading plugin list")
-    let presp = await fetch("https://wlodekm.nekoweb.org/assets/misc/wlplugins/plugins.json", {cache: "no-store"})
+    let presp = await fetch("https://wlodekm.github.io/wl-plugins/plugins.json", {cache: "no-store"})
     let plist = await presp.json()
     logCategory("plugins", "blue", "Pluginst list fetched", plist)
     let wlPluginsEnabled = JSON.parse(localStorage.getItem("wl") ?? "false") || Object.fromEntries(Object.keys(plist).map(n => [n, false]))
     wlPluginsEnabled.default = true
+    let wlCustomPlugins = JSON.parse(localStorage.getItem("wlc") ?? "[]")
 
     function updatePluginsEnabled() {
         localStorage.setItem('wl', JSON.stringify(wlPluginsEnabled))
@@ -93,6 +94,7 @@ async function loadPlugins() {
 
     wl.plugins = {
         list: plist,
+        custom: wlCustomPlugins,
         enabled: wlPluginsEnabled,
         enabled_array: () => Object.entries(wl.plugins.enabled).filter(([name, enabled]) => enabled).map(([name]) => name),
         enable(name) {
@@ -120,6 +122,17 @@ async function loadPlugins() {
             });
             let plugin = logFunction+";\n"+(await (await fetch(plist[name].script, {cache: "no-store"})).text());
             await eval(plugin)
+        },
+        async loadCustom(plugin) {
+            const logFunction = `function log(...stuff) {
+                console.info(\`%cwl%c %cplugins%c %c${plugin.name}%c %s\`, "border-radius:5em;background:black;color:white;padding-inline:0.5em", "", "border-radius:5em;background:blue;color:white;padding-inline:0.5em", "", "border-radius:5em;background:orange;color:black;padding-inline:0.5em", "", ...stuff)
+            };const WL_plugin_info = ${JSON.stringify(plugin)};WL_plugin_info.id=\`${plugin.name.replaceAll("`", "\\`")}\`\n`+(function css(css) {
+                wl.events.addEventListener("register-css", function () {
+                    wl.util.registerCss(WL_plugin_info.id, css)
+                })
+            });
+            let pluginScript = logFunction+";\n"+plugin.script;
+            await eval(pluginScript)
         }
     }
 
@@ -138,6 +151,19 @@ async function loadPlugins() {
         await wl.plugins.load(pluginName)
         logCategory("plugins", "blue", pluginName, "loaded")
         wl.util.updateStatus(`Plugin "${pluginName}" loaded`)
+    }
+    wl.util.updateStatus(`Built-in plugins loaded, loading custom plugins`)
+    for (let i = 0; i < wl.plugins.custom.length; i++) {
+        let plugin = wl.plugins.custom[i]
+        function log(...stuff) {
+            console.info(`%cwl%c %c${plugin.name}%c %s`, "border-radius:5em;background:black;color:white;padding-inline:0.5em", "", "border-radius:5em;background:orange;color:black;padding-inline:0.5em", "", ...stuff)
+        }
+        logCategory("plugins", "blue", "Loading", plugin.name)
+        wl.util.log = log
+        wl.util.updateStatus(`Loading custom plugin "${plugin.name}"`)
+        await wl.plugins.loadCustom(plugin)
+        logCategory("plugins", "blue", plugin.name, "loaded")
+        wl.util.updateStatus(`Plugin "${plugin.name}" loaded`)
     }
     wl.util.updateStatus(`All plugins loaded!`)
 }
