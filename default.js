@@ -1,3 +1,13 @@
+if(!localStorage.hasOwnProperty("wl-icon")) localStorage.setItem("wl-icon", true);
+
+if(!localStorage.hasOwnProperty("test")) {
+    async function check() {
+        let latest = await (await fetch('https://raw.githubusercontent.com/WlodekM/wl-plugins/refs/heads/main/latest-version.txt')).text();
+        let thisversion = GM_info.script.version || (String(GM.info.scriptMetaStr.split("\n").find(l=>l.startsWith("// @version"))).replace(/^\/\/ @version *(.*)$/g,"$1"))
+        if(latest != thisversion) alert("Please update wl plugins")
+    }
+}
+
 wl.events.addEventListener("addSettingsPages", function () {
     log("Adding default settings page")
     wl.util.addSettingsPage('wlodeksShenanigans', {
@@ -34,6 +44,22 @@ wl.events.addEventListener("addSettingsPages", function () {
                 <h3>Add custom plugin</h3>
                 <br>
                 <input type='file' accept='application/javascript' id='pluginInput'><br>
+                <h2>Other settings</h2>
+                <div class="settings-section-outer">
+                    <div class="stg-section${localStorage.getItem("wl-icon") ? " checked" : ""}" onclick='this.classList.toggle("checked");localStorage.setItem("wl-icon", !localStorage.getItem("wl-icon"));modalPluginup()'>
+                        <label class="general-label">
+                            <div class="general-desc">
+                                WL-plugins icon
+                                <p class="subsubheader">Replace the meo icon with the wl-plugins icon</p>
+                            </div>
+                            <div class="settingstoggle">
+                                <svg viewBox="0 0 24 24" height="20" width="20" aria-hidden="true" focusable="false" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="check">
+                                    <path d="m10 15.586-3.293-3.293-1.414 1.414L10 18.414l9.707-9.707-1.414-1.414z"></path>
+                                </svg>
+                            </div>
+                        </label>
+                    </div>
+                </div>
             `;
             document.getElementById("pluginInput").addEventListener('change', (event)=>{
                 var input = event.target;
@@ -78,4 +104,15 @@ wl.events.addEventListener("page-start", ()=>{
     discordButton.addEventListener("click", ()=>window.open("https://discord.gg/vjD9sQ7uDG", '_blank').focus())
     wlButtonSection.appendChild(discordButton)
     document.querySelector('.explore').appendChild(wlButtonSection)
+})
+async function logoMixin (o, ...args) {
+    o(...args);
+    let logo = await (await fetch("https://wlodekm.github.io/wl-plugins/assets/logo.svg")).text()
+    let navc = document.getElementById("nav");
+    navc.innerHTML = navc.innerHTML.replace(/\<svg width="32" height="32" viewBox="0 0 512 512" xmlns="http:\/\/www.w3.org\/2000\/svg"\>[^]*?\<\/svg\>/g, logo)
+}
+wl.events.addEventListener("post-ready", ()=>{
+    sidebars = wl.util.mixin(sidebars, logoMixin)
+    loadchat = wl.util.mixin(loadchat, logoMixin)
+    loadstgs = wl.util.mixin(loadstgs, logoMixin)
 })
