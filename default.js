@@ -17,6 +17,7 @@ wl.events.addEventListener("addSettingsPages", function () {
     wl.util.addSettingsPage('wlodeksShenanigans', {
         displayName: "WL plugins",
         func: function load() {
+            
             setTop();
             let pageContainer = document.querySelector(".settings");
             pageContainer.innerHTML = `

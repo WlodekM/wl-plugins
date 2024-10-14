@@ -23,5 +23,11 @@
         "author": "WlodekM",
         "name": "No CL logs",
         "description": "Disables CloudLink logs in console, now you can send screenshots of the console safely without accisentally sending your token"
+    },
+    "party": {
+        "script": "http://wlodekm.github.io/wl-plugins/party.js",
+        "author": "WlodekM",
+        "name": "Party",
+        "description": "Brings back the birthday confetti"
     }
 }
