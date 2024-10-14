@@ -2,10 +2,14 @@ if (!localStorage.hasOwnProperty("wl-icon")) localStorage.setItem("wl-icon", tru
 
 if (!localStorage.hasOwnProperty("test")) {
     async function check() {
+        log("Checking version")
         let latest = await (await fetch('https://raw.githubusercontent.com/WlodekM/wl-plugins/refs/heads/main/latest-version.txt')).text();
+        log("Latest version:", latest)
         let thisversion = GM_info.script.version || (String(GM.info.scriptMetaStr.split("\n").find(l => l.startsWith("// @version"))).replace(/^\/\/ @version *(.*)$/g, "$1"))
+        log("This version", thisversion)
         if (latest != thisversion) alert("Please update wl plugins")
     }
+    check()
 }
 
 wl.events.addEventListener("addSettingsPages", function () {
