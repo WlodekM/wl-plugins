@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WL plugins for meo
-// @version      1.1b
+// @version      1.1c
 // @description  Plugins but cool and custom
 // @author       WlodekM
 // @match        https://eris.pages.dev/meo/
@@ -23,20 +23,27 @@ function logCategory(category, color, ...stuff) {
 }
 
 function logCategoryStyled(category, color, style, ...stuff) {
-    console.info(`%cwl%c %c${category}%c %s`, "border-radius:5em;background:black;padding-inline:0.5em;"+style, style, `border-radius:5em;background:${color};color:white;padding-inline:0.5em;${style}`, style, ...stuff)
+    console.info(`%cwl%c %c${category}%c %s`, "border-radius:5em;background:black;padding-inline:0.5em;" + style, style, `border-radius:5em;background:${color};color:white;padding-inline:0.5em;${style}`, style, ...stuff)
 }
 
 const realWebsockets = WebSocket
 WebSocket = null
 
-const version = GM_info.script.version || (String(GM.info.scriptMetaStr.split("\n").find(l=>l.startsWith("// @version"))).replace(/^\/\/ @version *(.*)$/g,"$1"))
+const version = GM_info.script.version || (String(GM.info.scriptMetaStr.split("\n").find(l => l.startsWith("// @version"))).replace(/^\/\/ @version *(.*)$/g, "$1"))
 
 logCategoryStyled("main", "DarkGoldenRod", "font-size: 1.5em",
-`WL-plugins for meo version ${version}`)
+    `WL-plugins for meo version ${version}`)
 logCategory("main", "DarkGoldenRod",
-`WebSocket overridden
+    `WebSocket overridden
 Meo is going to error now, do not try to debug \"Uncaught TypeError: WebSocket is not a constructor
 That error is intended so that meo doesn't load the first time and WL plugins can load it when all plugins are loaded`)
+
+// logo for loading screen
+const logo = `<svg class="launch-logo" width="128" height="128" fill="var(--color)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+    <g transform="translate(0.15835, 1.65835)">
+        <path fill="currentColor" d="M31.65 2.66l-1.89 7.4-28.37-2.08-1.36-5.33c-.28-1.43 1.02-2.67 2.5-2.41l8.46 2.83c1.42-.44 3.03-.67 4.84-.64 1.81-.04 3.42.2 4.84.64l8.46-2.83c1.48-.27 2.77.98 2.5 2.41zM31.05 18.44c0 4.64-2.03 10.44-15.21 10.44S.62 23.08.62 18.44c0-1.81.42-4.8 1.66-7.76l-.3-1.16 15.73 1.15c-.05.22-.08.45-.08.68 0 1.99 1.96 3.6 4.37 3.6 2.41 0 4.37-1.61 4.37-3.6 0-.01 0-.03 0-.04l3.34.24c.98 2.67 1.32 5.26 1.32 6.89z"></path>
+    </g>
+</svg>`
 
 // events :yuhhuh:
 class MeoEvents extends EventTarget {
@@ -81,12 +88,20 @@ async function loadPlugins() {
 
     wl.util.updateStatus("Fetching plugin list...")
     logCategory("plugins", "blue", "Loading plugin list")
-    let presp = await fetch("https://wlodekm.github.io/wl-plugins/plugins.json", {cache: "no-store"})
+    let presp = await fetch("http://localhost:5056/plugins.json", { cache: "no-store" })
     let plist = await presp.json()
     logCategory("plugins", "blue", "Pluginst list fetched", plist)
     let wlPluginsEnabled = JSON.parse(localStorage.getItem("wl") ?? "false") || Object.fromEntries(Object.keys(plist).map(n => [n, false]))
     wlPluginsEnabled.default = true
-    let wlCustomPlugins = JSON.parse(localStorage.getItem("wlc") ?? "[]")
+    let wlCustomPlugins = JSON.parse(localStorage.getItem("wlc") ?? "[]");
+
+    // Sort enabled plugins so that they load in the right order
+    wlPluginsEnabled = Object.fromEntries(
+        Object.entries(wlPluginsEnabled).sort(([keyA], [keyB]) => {
+            const refKeys = Object.keys(plist);
+            return refKeys.indexOf(keyA) - refKeys.indexOf(keyB);
+        })
+    );
 
     function updatePluginsEnabled() {
         localStorage.setItem('wl', JSON.stringify(wlPluginsEnabled))
@@ -115,23 +130,23 @@ async function loadPlugins() {
         async load(name) {
             const logFunction = `function log(...stuff) {
                 console.info(\`%cwl%c %cplugins%c %c${name}%c %s\`, "border-radius:5em;background:black;color:white;padding-inline:0.5em", "", "border-radius:5em;background:blue;color:white;padding-inline:0.5em", "", "border-radius:5em;background:orange;color:black;padding-inline:0.5em", "", ...stuff)
-            };const WL_plugin_info = ${JSON.stringify(plist[name])};WL_plugin_info.id=\`${name.replaceAll("`", "\\`")}\`\n`+(function css(css) {
-                wl.events.addEventListener("register-css", function () {
-                    wl.util.registerCss(WL_plugin_info.id, css)
-                })
-            });
-            let plugin = logFunction+";\n"+(await (await fetch(plist[name].script, {cache: "no-store"})).text());
+            };const WL_plugin_info = ${JSON.stringify(plist[name])};WL_plugin_info.id=\`${name.replaceAll("`", "\\`")}\`\n` + (function css(css) {
+                    wl.events.addEventListener("register-css", function () {
+                        wl.util.registerCss(WL_plugin_info.id, css)
+                    })
+                });
+            let plugin = logFunction + ";\n" + (await (await fetch(plist[name].script, { cache: "no-store" })).text());
             await eval(plugin)
         },
         async loadCustom(plugin) {
             const logFunction = `function log(...stuff) {
                 console.info(\`%cwl%c %cplugins%c %c${plugin.name}%c %s\`, "border-radius:5em;background:black;color:white;padding-inline:0.5em", "", "border-radius:5em;background:blue;color:white;padding-inline:0.5em", "", "border-radius:5em;background:orange;color:black;padding-inline:0.5em", "", ...stuff)
-            };const WL_plugin_info = ${JSON.stringify(plugin)};WL_plugin_info.id=\`${plugin.name.replaceAll("`", "\\`")}\`\n`+(function css(css) {
-                wl.events.addEventListener("register-css", function () {
-                    wl.util.registerCss(WL_plugin_info.id, css)
-                })
-            });
-            let pluginScript = logFunction+";\n"+plugin.script;
+            };const WL_plugin_info = ${JSON.stringify(plugin)};WL_plugin_info.id=\`${plugin.name.replaceAll("`", "\\`")}\`\n` + (function css(css) {
+                    wl.events.addEventListener("register-css", function () {
+                        wl.util.registerCss(WL_plugin_info.id, css)
+                    })
+                });
+            let pluginScript = logFunction + ";\n" + plugin.script;
             await eval(pluginScript)
         }
     }
@@ -181,11 +196,11 @@ wl.events.addEventListener("ready", function () {
     }
 
     const settingsPages = {}
-    
-    wl.util.addSettingsPage = function(name, page) {
+
+    wl.util.addSettingsPage = function (name, page) {
         settingsPages[name] = page
     }
-    
+
     wl.events.fire("addSettingsPages")
 
     window.settingsPages = settingsPages
@@ -195,7 +210,7 @@ wl.events.addEventListener("ready", function () {
     loadstgs = function () {
         realLoadstgs()
         wl.events.fire("pageChange")
-        wl.events.fire("page-"+page)
+        wl.events.fire("page-" + page)
         navc = document.querySelector(".nav-top");
         for (pageid in settingsPages) {
             const pageData = settingsPages[pageid];
@@ -214,12 +229,12 @@ wl.events.addEventListener("ready", function () {
     });
     logCategory("API", "#9400D3", "Mixin for page change events applied successfully")
     wl.events.fire("pageChange")
-    wl.events.fire("page-"+page)
+    wl.events.fire("page-" + page)
 
     logCategory("API", "#9400D3", "Adding plugin css...")
     let pluginCss = {}
     wl.util.registerCss = function registerCss(plugin, css) {
-        if(!pluginCss[plugin]) pluginCss[plugin] = [];
+        if (!pluginCss[plugin]) pluginCss[plugin] = [];
         pluginCss[plugin].push(css)
     }
     wl.events.fire("register-css");
@@ -236,17 +251,18 @@ wl.events.addEventListener("ready", function () {
     wl.events.fire("post-ready")
 })
 // make it so that meo doesn't load (hopefully)
-document.addEventListener("DOMContentLoaded", ()=>{
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector(".launch-logo").outerHTML = logo;
     let status = document.createElement("span")
     status.classList.add("status")
     document.querySelector(".launch").insertBefore(status, document.querySelector(".launch").lastChild)
-    wl.util.updateStatus = function(newStatus) {
+    wl.util.updateStatus = function (newStatus) {
         status.innerText = newStatus;
         logCategory("status", "green", newStatus)
     }
-    loadPlugins().then(()=>{
+    loadPlugins().then(() => {
         wl.util.updateStatus(`All plugins loaded! Waiting a bit before launching meo`)
-        setTimeout(()=>{
+        setTimeout(() => {
             wl.util.updateStatus("Launching meo...")
             logCategory("main", "DarkGoldenRod", "Plugins loaded, setting back WebSocket...")
             WebSocket = realWebsockets
