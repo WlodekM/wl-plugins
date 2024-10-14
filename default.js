@@ -1,10 +1,10 @@
-if(!localStorage.hasOwnProperty("wl-icon")) localStorage.setItem("wl-icon", true);
+if (!localStorage.hasOwnProperty("wl-icon")) localStorage.setItem("wl-icon", true);
 
-if(!localStorage.hasOwnProperty("test")) {
+if (!localStorage.hasOwnProperty("test")) {
     async function check() {
         let latest = await (await fetch('https://raw.githubusercontent.com/WlodekM/wl-plugins/refs/heads/main/latest-version.txt')).text();
-        let thisversion = GM_info.script.version || (String(GM.info.scriptMetaStr.split("\n").find(l=>l.startsWith("// @version"))).replace(/^\/\/ @version *(.*)$/g,"$1"))
-        if(latest != thisversion) alert("Please update wl plugins")
+        let thisversion = GM_info.script.version || (String(GM.info.scriptMetaStr.split("\n").find(l => l.startsWith("// @version"))).replace(/^\/\/ @version *(.*)$/g, "$1"))
+        if (latest != thisversion) alert("Please update wl plugins")
     }
 }
 
@@ -18,7 +18,7 @@ wl.events.addEventListener("addSettingsPages", function () {
             pageContainer.innerHTML = `
                 <h1>WL plugins</h1>
                 <div class="settings-section-outer">
-                    ${Object.entries(wl.plugins.list).map(([p, d]) => `<div class="stg-section${wl.plugins.enabled_array().includes(p) ? " checked" : ""}${wl.plugins.list[p].alwayson ? " disabled" : ""}" id="${"wl-plugin-"+p}" ${!wl.plugins.list[p].alwayson ? `onclick='this.classList.toggle("checked");wl.plugins.toggle(${JSON.stringify(p)});modalPluginup()'` : ""}>
+                    ${Object.entries(wl.plugins.list).map(([p, d]) => `<div class="stg-section${wl.plugins.enabled_array().includes(p) ? " checked" : ""}${wl.plugins.list[p].alwayson ? " disabled" : ""}" id="${"wl-plugin-" + p}" ${!wl.plugins.list[p].alwayson ? `onclick='this.classList.toggle("checked");wl.plugins.toggle(${JSON.stringify(p)});modalPluginup()'` : ""}>
                         <label class="general-label">
                             <div class="general-desc">
                                 ${d.name ?? `plugin.${p}.name`}
@@ -46,7 +46,7 @@ wl.events.addEventListener("addSettingsPages", function () {
                 <input type='file' accept='application/javascript' id='pluginInput'><br>
                 <h2>Other settings</h2>
                 <div class="settings-section-outer">
-                    <div class="stg-section${localStorage.getItem("wl-icon") ? " checked" : ""}" onclick='this.classList.toggle("checked");localStorage.setItem("wl-icon", !localStorage.getItem("wl-icon"));modalPluginup()'>
+                    <div class="stg-section${JSON.parse(localStorage.getItem("wl-icon")) ? " checked" : ""}" onclick='this.classList.toggle("checked");localStorage.setItem("wl-icon", !JSON.parse(localStorage.getItem("wl-icon")));modalPluginup()'>
                         <label class="general-label">
                             <div class="general-desc">
                                 WL-plugins icon
@@ -61,11 +61,11 @@ wl.events.addEventListener("addSettingsPages", function () {
                     </div>
                 </div>
             `;
-            document.getElementById("pluginInput").addEventListener('change', (event)=>{
+            document.getElementById("pluginInput").addEventListener('change', (event) => {
                 var input = event.target;
 
                 var reader = new FileReader();
-                reader.onload = function() {
+                reader.onload = function () {
                     var text = reader.result;
                     let name = prompt("Plugin name")
                     let description = prompt("Plugin description")
@@ -92,7 +92,7 @@ css(`.disabled .settingstoggle {
 	color: var(--button-color) !important;
 }`)
 
-wl.events.addEventListener("page-start", ()=>{
+wl.events.addEventListener("page-start", () => {
     logCategory("misc", "gray", "Adding WL buttons")
     let wlButtonSection = document.createElement("div")
     wlButtonSection.classList.add("settings-section-outer")
@@ -101,18 +101,30 @@ wl.events.addEventListener("page-start", ()=>{
     discordButton.classList.add("button")
     discordButton.classList.add("stg-section")
     discordButton.innerText = "Join the WL plugins discord!";
-    discordButton.addEventListener("click", ()=>window.open("https://discord.gg/vjD9sQ7uDG", '_blank').focus())
+    discordButton.addEventListener("click", () => window.open("https://discord.gg/vjD9sQ7uDG", '_blank').focus())
     wlButtonSection.appendChild(discordButton)
     document.querySelector('.explore').appendChild(wlButtonSection)
 })
-async function logoMixin (o, ...args) {
-    o(...args);
-    let logo = await (await fetch("https://wlodekm.github.io/wl-plugins/assets/logo.svg")).text()
-    let navc = document.getElementById("nav");
-    navc.innerHTML = navc.innerHTML.replace(/\<svg width="32" height="32" viewBox="0 0 512 512" xmlns="http:\/\/www.w3.org\/2000\/svg"\>[^]*?\<\/svg\>/g, logo)
-}
-wl.events.addEventListener("post-ready", ()=>{
-    sidebars = wl.util.mixin(sidebars, logoMixin)
-    loadchat = wl.util.mixin(loadchat, logoMixin)
-    loadstgs = wl.util.mixin(loadstgs, logoMixin)
+
+wl.events.addEventListener("post-ready", () => {
+    if(!JSON.parse(localStorage.getItem("wl-icon"))) return;
+    let didLogoMixin = false;
+    wl.events.addEventListener("page-start", () => {
+        if (didLogoMixin) return;
+        didLogoMixin = true
+        async function loadLogo() {
+            return await (await fetch("https://wlodekm.github.io/wl-plugins/assets/logo.svg")).text()
+        }
+        loadLogo().then((logo) => {
+            let navc = document.getElementById("nav");
+            function replaceLogo() {
+                console.log("replaceing logo")
+                if(!navc.innerHTML.match(/\<svg width="32" height="32" viewBox="0 0 512 512" xmlns="http:\/\/www.w3.org\/2000\/svg"\>[^]*?\<\/svg\>/g)) return;
+                navc.innerHTML = navc.innerHTML.replace(/\<svg width="32" height="32" viewBox="0 0 512 512" xmlns="http:\/\/www.w3.org\/2000\/svg"\>[^]*?\<\/svg\>/g, logo)
+            }
+            let redstoneObserver = new MutationObserver(replaceLogo)
+            redstoneObserver.observe(navc, {childList: true, subtree: true})
+            replaceLogo()
+        })
+    })
 })
