@@ -88,7 +88,7 @@ async function loadPlugins() {
 
     wl.util.updateStatus("Fetching plugin list...")
     logCategory("plugins", "blue", "Loading plugin list")
-    let presp = await fetch("http://localhost:5056/plugins.json", { cache: "no-store" })
+    let presp = await fetch(localStorage.hasOwnProperty("test") ? "http://localhost:5056/plugins.json" : "https://wlodekm.github.io/wl-plugins/plugins.json", { cache: "no-store" })
     let plist = await presp.json()
     logCategory("plugins", "blue", "Pluginst list fetched", plist)
     let wlPluginsEnabled = JSON.parse(localStorage.getItem("wl") ?? "false") || Object.fromEntries(Object.keys(plist).map(n => [n, false]))
