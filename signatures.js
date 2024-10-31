@@ -15,17 +15,31 @@ wl.events.addEventListener("ready", function () {
     }, sendpost)
 })
 
-wl.events.addEventListener("addSettingsPages", function () {
-    log("Adding signatures settings page")
-    wl.util.addSettingsPage('signatures', {
-        displayName: "Signatures",
-        func: function load() {
-            setTop();
-            let pageContainer = document.querySelector(".settings");
-            pageContainer.innerHTML = `
-                <h1>Signatures</h1>
-                <input value="${String(localStorage.getItem("signature") ?? "").replaceAll('"', "&quot;")}" placeholder="Type your signature here" onchange="localStorage.setItem('signature', this.value)">
-            `;
-        }
-    })
-})
+const settingsPages = {}
+
+log("Adding signatures settings page")
+settingsPages['signatures'] = {
+    displayName: "Signatures",
+    func: function load() {
+        setTop();
+        let pageContainer = document.querySelector(".settings");
+        pageContainer.innerHTML = `
+            <h1>Signatures</h1>
+            <textarea value="${String(localStorage.getItem("signature") ?? "").replaceAll('"', "&quot;")}" placeholder="Type your signature here" onchange="localStorage.setItem('signature', this.value)"></textarea>
+        `;
+    }
+}
+
+logCategory("API", "#9400D3", "Doing mixin for settings pages")
+let realLoadstgs = loadstgs;
+loadstgs = function () {
+    realLoadstgs()
+    wl.events.fire("pageChange")
+    wl.events.fire("page-" + page)
+    navc = document.querySelector(".nav-top");
+    for (pageid in settingsPages) {
+        const pageData = settingsPages[pageid];
+        navc.innerHTML += `
+    <input type='button' class='settings-button button' id='submit' value='${pageData.displayName.replaceAll("'", "&apos;")}' onclick='window.settingsPages.${pageid}.func()' aria-label="${pageid}">`
+    }
+};
