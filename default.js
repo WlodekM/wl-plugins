@@ -1,5 +1,9 @@
 if (!localStorage.hasOwnProperty("wl-icon")) localStorage.setItem("wl-icon", true);
 
+const isGreater = (a, b) => {
+    return a.localeCompare(b, undefined, { numeric: true }) === 1;
+};
+
 if (!localStorage.hasOwnProperty("test")) {
     async function check() {
         log("Checking version")
@@ -7,7 +11,7 @@ if (!localStorage.hasOwnProperty("test")) {
         log("Latest version:", latest)
         let thisversion = GM_info.script.version || (String(GM.info.scriptMetaStr.split("\n").find(l => l.startsWith("// @version"))).replace(/^\/\/ @version *(.*)$/g, "$1"))
         log("This version", thisversion)
-        if (latest != thisversion) alert("Please update wl plugins")
+        if (isGreater(latest, thisversion)) alert("Please update wl plugins")
     }
     check()
 }
