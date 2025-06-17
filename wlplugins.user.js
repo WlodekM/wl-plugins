@@ -225,7 +225,7 @@ async function loadPlugins(exec=true) {
                 let plugin = logFunction + ";\n" + (await (await fetch(plist[name].script, { cache: "no-store" })).text());
                 await eval(plugin)
             } catch (e) {
-                console.error(`Couldnt load built-in plugin "${name}". Is your wl-plugins up-to-date?`)
+                console.error(`Couldn't load built-in plugin "${name}". Is your wl-plugins up-to-date?`, e)
             }
         },
         async loadCustom(plugin) {
@@ -238,7 +238,7 @@ async function loadPlugins(exec=true) {
                 let pluginScript = logFunction + ";\n" + plugin.script;
                 await eval(pluginScript)
             } catch (e) {
-                console.error(`Couldnt load custom plugin "${plugin.name}". Is your wl-plugins up-to-date?`)
+                console.error(`Couldn't load custom plugin "${plugin.name}". Is your wl-plugins up-to-date?`, e)
             }
         }
     }
