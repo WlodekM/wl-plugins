@@ -1,4 +1,3 @@
-console.log('uh')
 if (localStorage.getItem('serverUrl'))
     window.serverURL = localStorage.getItem('serverUrl');
 
@@ -57,13 +56,13 @@ notify = wl.util.mixinStr(notify, [`6:R fetch(localStorage.getItem("apiUrl")+\`/
 
 const resetButton = document.querySelector(".launch-reset");
 resetButton.innerText = "Change server URL";
-window.changeServerPage = function changeServerPage() {
+window.changeServerPage = function changeServerPage(q="main") {
     page = "changeserver";
     window.setUrls = function setUrls() {
         localStorage.setItem('serverUrl', document.getElementById('ws-url').value)
         localStorage.setItem('apiUrl', document.getElementById('api-url').value)
     }
-    const pageContainer = document.getElementById("main");
+    const pageContainer = document.getElementById(q);
     pageContainer.innerHTML = 
     `<div class='login'>
         haiiiii<br>
@@ -78,3 +77,12 @@ window.changeServerPage = function changeServerPage() {
 }
 resetButton.onclick = window.changeServerPage;
 resetButton.setAttribute("onclick", "window.changeServerPage()")
+wl.events.addEventListener("addSettingsPages", function () {
+    log("Adding server url settings page")
+    wl.util.addSettingsPage('serverUrl', {
+        displayName: "Change server URL",
+        func: function load() {
+            window.changeServerPage(".settings")
+        }
+    })
+})
