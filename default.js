@@ -40,11 +40,13 @@ wl.events.addEventListener("addSettingsPages", function () {
                 <h1>WL plugins</h1>
                 <h2>Info</h2>
                 <div class="settings-section-outer">
-                    <span>WL Plugins UserScript version ${version}</span>
-                    <hr>
-                    <span id="plugins-ver">WL Plugins ()</span>
-                    <br>
-                    <span class="subsubheader" id="plugins-commit-name"></span>
+                    <div class="stg-section">
+                        <span>WL Plugins UserScript version ${version}</span>
+                        <hr>
+                        <span id="plugins-ver">WL Plugins ()</span>
+                        <br>
+                        <span class="subsubheader" id="plugins-commit-name"></span>
+                    </div>"
                 </div>
                 <h2>Settings</h2>
                 <div class="settings-section-outer">
