@@ -294,7 +294,7 @@ if ((document.location.hostname == 'wlodekm.github.io') || document.location.pat
         document.body.innerHTML = `<div id="container" style="height: 100%"></div><div><div style="display: flex;gap: 1em;overflow: auto">${
         wl.plugins.custom.map((p, i) => `<div class="stg-section">
         <div class="general-desc">
-            ${p.name ?? `plugin.name`} <button onclick="if(confirm('really delete plugin?')) {wl.plugins.custom.splice(${i}, 1);localStorage.setItem('wlc', JSON.stringify(wl.plugins.custom));modalPluginup()};document.location.reload()">delete</button>
+            ${p.name ?? `plugin.name`} <button onclick="if(confirm('really delete plugin?')) {wl.plugins.custom.splice(${i}, 1);localStorage.setItem('wlc', JSON.stringify(wl.plugins.custom));document.location.reload()}">delete</button>
             <button onclick="editPlugin('${p.name.replaceAll("'", "\\'")}')">edit</button>
             <p class="subsubheader">${p.description ?? `plugin.description`}</p>
         </div>
