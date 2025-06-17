@@ -138,12 +138,7 @@ wl.events.addEventListener("post-ready", () => {
     })
 })
 
-document.addEventListener('keydown', e => {
-	if (e.key != 's' || !e.ctrlKey)
-		return;
-	if (!['load', 'login'].includes(page))
-		return;
-	e.preventDefault();
+function emergencySettings() {
 	page = 'settings';
 	sidebars();
 	renderChats();
@@ -156,4 +151,13 @@ document.addEventListener('keydown', e => {
 	});
     meowerConnection.onclose = () =>
 	loadLogin = () => {throw 'nuh uh'}
+}
+document.addEventListener('keydown', e => {
+	if (e.key != 's' || !e.ctrlKey)
+		return;
+	if (!['load', 'login'].includes(page))
+		return;
+	e.preventDefault();
+    emergencySettings()
 })
+document.querySelector('.launch-logo').onclick = ()=>emergencySettings()
