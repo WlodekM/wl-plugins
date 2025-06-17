@@ -29,5 +29,11 @@
         "author": "WlodekM",
         "name": "Party",
         "description": "Brings back the birthday confetti"
+    },
+    "party": {
+        "script": "https://wlodekm.github.io/wl-plugins/serverurl.js",
+        "author": "WlodekM",
+        "name": "Change server URL",
+        "description": "Allows you to change the server URL"
     }
 }
