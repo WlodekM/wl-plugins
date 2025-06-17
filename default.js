@@ -27,11 +27,26 @@ wl.events.addEventListener("addSettingsPages", function () {
     wl.util.addSettingsPage('wlodeksShenanigans', {
         displayName: "WL plugins",
         func: function load() {
-            
+            async function fetchCommit() {
+                const resp = await fetch('https://api.github.com/repos/WlodekM/wl-plugins/commits/pages');
+                const json = await resp.json();
+                document.getElementById('plugins-ver').innerText = `WL Plugins (${json.sha.substring(0, 8)})`
+                document.getElementById('plugins-commit-name').innerText = json.commit.message
+            }
+            fetchCommit()
             setTop();
             let pageContainer = document.querySelector(".settings");
             pageContainer.innerHTML = `
                 <h1>WL plugins</h1>
+                <h2>Info</h2>
+                <div class="settings-section-outer">
+                    <span>WL Plugins UserScript version ${version}</span>
+                    <hr>
+                    <span id="plugins-ver">WL Plugins ()</span>
+                    <br>
+                    <span class="subsubheader" id="plugins-commit-name"></span>
+                </div>
+                <h2>Settings</h2>
                 <div class="settings-section-outer">
                     ${Object.entries(wl.plugins.list).map(([p, d]) => `<div class="stg-section${wl.plugins.enabled_array().includes(p) ? " checked" : ""}${wl.plugins.list[p].alwayson ? " disabled" : ""}" id="${"wl-plugin-" + p}" ${!wl.plugins.list[p].alwayson ? `onclick='this.classList.toggle("checked");wl.plugins.toggle(${JSON.stringify(p)});modalPluginup()'` : ""}>
                         <label class="general-label">
