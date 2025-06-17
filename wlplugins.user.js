@@ -38,7 +38,7 @@ logCategoryStyled("main", "DarkGoldenRod", "font-size: 1.5em",
     `WL-plugins for meo version ${version}`)
 logCategory("main", "DarkGoldenRod",
     `WebSocket overridden
-Meo is going to error now, do not try to debug \"Uncaught TypeError: WebSocket is not a constructor
+Meo is going to error now, do not try to debug "Uncaught TypeError: WebSocket is not a constructor"
 That error is intended so that meo doesn't load the first time and WL plugins can load it when all plugins are loaded`)
 
 // logo for loading screen
@@ -83,7 +83,7 @@ const wl = window.wl = {
             logCategory("status", "green", "status not ready yet", status)
         },
         mixinStr(fn, mixins, argnames) {
-            //TODO: make this not fuck up line numbers 
+            //TODO: make this not fuck up line numbers
             const source = fn.toString()
                 .replace(/(^(async )?function[^{]+{)|(^\([^\)]*\)\s*=>[^{]+{)\n?/i,"") // remove everything up to and including the first curly bracket
                 .replace(/}[^}]*$/i, "") // remove last curly bracket and everything after
