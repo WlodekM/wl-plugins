@@ -151,8 +151,9 @@ document.addEventListener('keydown', e => {
 	document.getElementById('groups').style.display='none';
 	document.getElementById('submit').style.display='none';
 	[...document.querySelector('.navigation').children].forEach(c => {
-	if ([...c.classList].includes('nav-top')) return;
-	c.style.display = 'none'
+        if ([...c.classList].includes('nav-top')) return;
+        c.style.display = 'none'
 	});
+    meowerConnection.onclose = () =>
 	loadLogin = () => {throw 'nuh uh'}
 })
