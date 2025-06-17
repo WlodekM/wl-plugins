@@ -1,4 +1,10 @@
 if (!localStorage.hasOwnProperty("wl-icon")) localStorage.setItem("wl-icon", true);
+const enabledPlugins = JSON.parse(localStorage.getItem('enabledPlugins')) || {};
+if (!enabledPlugins['i rember 😃']) {
+    log('Enabling i rember 😃 so that meo doesn\'t kill your wl-plugins settings')
+    enabledPlugins['i rember 😃'] = true;
+    localStorage.setItem('enabledPlugins', JSON.stringify(enabledPlugins))
+}
 
 const isGreater = (a, b) => {
     return a.localeCompare(b, undefined, { numeric: true }) === 1;
