@@ -56,13 +56,13 @@ notify = wl.util.mixinStr(notify, [`6:R fetch(localStorage.getItem("apiUrl")+\`/
 
 const resetButton = document.querySelector(".launch-reset");
 resetButton.innerText = "Change server URL";
-window.changeServerPage = function changeServerPage(q="main") {
+window.changeServerPage = function changeServerPage(q="#main") {
     page = "changeserver";
     window.setUrls = function setUrls() {
         localStorage.setItem('serverUrl', document.getElementById('ws-url').value)
         localStorage.setItem('apiUrl', document.getElementById('api-url').value)
     }
-    const pageContainer = document.getElementById(q);
+    const pageContainer = document.querySelector(q);
     pageContainer.innerHTML = 
     `<div class='login'>
         haiiiii<br>
