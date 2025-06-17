@@ -30,7 +30,7 @@
         "name": "Party",
         "description": "Brings back the birthday confetti"
     },
-    "party": {
+    "serverUrl": {
         "script": "https://wlodekm.github.io/wl-plugins/serverurl.js",
         "author": "WlodekM",
         "name": "Change server URL",
