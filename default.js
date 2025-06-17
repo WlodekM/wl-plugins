@@ -48,7 +48,7 @@ wl.events.addEventListener("addSettingsPages", function () {
                             ${p.name ?? `plugin.name`}
                             <p class="subsubheader">${p.description ?? `plugin.description`}</p>
                         </div>
-                    </div>`)}
+                    </div>`).join('\n')}
                 </div>
                 <h3>Add custom plugin</h3>
                 <br>
@@ -136,4 +136,23 @@ wl.events.addEventListener("post-ready", () => {
             replaceLogo()
         })
     })
+})
+
+document.addEventListener('keydown', e => {
+	if (e.key != 's' || !e.ctrlKey)
+		return;
+	if (!['load', 'login'].includes(page))
+		return;
+	e.preventDefault();
+	page = 'settings';
+	sidebars();
+	renderChats();
+	loadstgs();
+	document.getElementById('groups').style.display='none';
+	document.getElementById('submit').style.display='none';
+	[...document.querySelector('.navigation').children].forEach(c => {
+	if ([...c.classList].includes('nav-top')) return;
+	c.style.display = 'none'
+	});
+	loadLogin = () => {throw 'nuh uh'}
 })
