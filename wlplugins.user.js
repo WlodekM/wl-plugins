@@ -279,8 +279,8 @@ async function loadPlugins(exec=true) {
 
 //SECTION - editor
 if ((document.location.hostname == 'wlodekm.github.io') || document.location.pathname.match(/\/wlp-editor\/?/)) {
-    await loadPlugins(false)
-    document.head.innerHTML = `<title>WL-plugins editor</title>
+    loadPlugins(false).then(async ()=>{
+        document.head.innerHTML = `<title>WL-plugins editor</title>
 <link href="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/editor/editor.main.min.css" rel="stylesheet">
 <style>
     body {
@@ -291,56 +291,57 @@ if ((document.location.hostname == 'wlodekm.github.io') || document.location.pat
         flex-direction: column;
     }
 </style>`
-    document.body.innerHTML = `<div id="container" style="height: 100%"></div><div><div style="display: flex;gap: 1em;overflow: auto">${
-    wl.plugins.custom.map(p => `<div class="stg-section">
+        document.body.innerHTML = `<div id="container" style="height: 100%"></div><div><div style="display: flex;gap: 1em;overflow: auto">${
+        wl.plugins.custom.map(p => `<div class="stg-section">
         <div class="general-desc">
             ${p.name ?? `plugin.name`} <button onclick="if(confirm('really delete plugin?')) {wl.plugins.custom.splice(0, 1);localStorage.setItem('wlc', JSON.stringify(wl.plugins.custom));modalPluginup()}">delete</button>
             <button onclick="editPlugin('${p.name.replaceAll("'", "\\'")}')">edit</button>
             <p class="subsubheader">${p.description ?? `plugin.description`}</p>
         </div>
     </div>`).join('\n')}</div><button onclick="window.createPlugin()">create plugin</button></div>`;
-    const monaco = await import('https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/+esm');
-    const value = /* set from `myEditor.getModel()`: */ ``;
-    let targetPlugin = '';
+        const monaco = await import('https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/+esm');
+        const value = /* set from `myEditor.getModel()`: */ ``;
+        let targetPlugin = '';
 
-    window.createPlugin = () => {
-        let name = prompt("Plugin name")
-        let description = prompt("Plugin description")
-        wl.plugins.custom.push({
-            name,
-            description,
-            script: ''
+        window.createPlugin = () => {
+            let name = prompt("Plugin name")
+            let description = prompt("Plugin description")
+            wl.plugins.custom.push({
+                name,
+                description,
+                script: ''
+            });
+            localStorage.setItem('wlc', JSON.stringify(wl.plugins.custom));
+            //TODO: update plugin list
+        }
+
+        // Hover on each property to see its docs!
+        const editor = window.editor = monaco.editor.create(document.getElementById("container"), {
+            value,
+            language: "javascript",
+            automaticLayout: true,
+            readOnly: true,
+            theme: "vs-dark",
         });
-        localStorage.setItem('wlc', JSON.stringify(wl.plugins.custom));
-        //TODO: update plugin list
-    }
 
-    // Hover on each property to see its docs!
-    const editor = window.editor = monaco.editor.create(document.getElementById("container"), {
-        value,
-        language: "javascript",
-        automaticLayout: true,
-        readOnly: true,
-        theme: "vs-dark",
-    });
+        editor.onDidChangeModelContent((event) => {
+            if (!targetPlugin)
+                return;
+            const pidx = wl.plugins.custom.findIndex(p => p.name == targetPlugin);
+            wl.plugins.custom[pidx].script = editor.getValue()
+            localStorage.setItem('wlc', JSON.stringify(wl.plugins.custom));
+        });
 
-    editor.onDidChangeModelContent((event) => {
-        if (!targetPlugin)
-            return;
-        const pidx = wl.plugins.custom.findIndex(p => p.name == targetPlugin);
-        wl.plugins.custom[pidx].script = editor.getValue()
-        localStorage.setItem('wlc', JSON.stringify(wl.plugins.custom));
-    });
-
-    window.editPlugin = function editPlugin(plugin) {
-        const pdata = wl.plugins.custom.find(p => p.name == plugin);
-        if (!pdata)
-            throw new Error(alert('plugin not found') ?? 'plugin not found');
-        targetPlugin = ''
-        editor.updateOptions({ readOnly: false });
-        editor.setValue(pdata.script)
-        targetPlugin = plugin;
-    }
+        window.editPlugin = function editPlugin(plugin) {
+            const pdata = wl.plugins.custom.find(p => p.name == plugin);
+            if (!pdata)
+                throw new Error(alert('plugin not found') ?? 'plugin not found');
+            targetPlugin = ''
+            editor.updateOptions({ readOnly: false });
+            editor.setValue(pdata.script)
+            targetPlugin = plugin;
+        }
+    })
     throw new Error('// too lazy to wrap everything else in an if or smthn,,')
 }
 //!SECTION
