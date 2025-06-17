@@ -140,7 +140,7 @@ const wl = window.wl = {
                 offset++;
             }
 
-            console.log((argnames ?? fn.arguments))
+            // console.log((argnames ?? fn.arguments))
             let result;
             try {
                 if (fn.toString().startsWith("async"))
